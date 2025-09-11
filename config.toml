@@ -1,0 +1,7 @@
+# Configuration for IdleDash
+
+# A list of paths to scan for Git/Mercurial repositories.
+# Supports recursive scanning.
+vcs_paths = [
+    "/Users/cheilman/projects"
+]
