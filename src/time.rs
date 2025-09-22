@@ -8,6 +8,10 @@ use ratatui::{
 use tui_big_text::{BigText, PixelSize};
 
 pub fn render_local_time_widget(f: &mut Frame, rect: Rect, app: &AppState) {
+    let block = Block::default().title("Local Time").borders(Borders::ALL);
+    let inner_rect = block.inner(rect);
+    f.render_widget(block, rect);
+
     let local_time_str = app.local_time.format("%H:%M:%S").to_string();
     let big_text = BigText::builder()
         .pixel_size(PixelSize::Full)
@@ -15,7 +19,7 @@ pub fn render_local_time_widget(f: &mut Frame, rect: Rect, app: &AppState) {
         .style(Style::default().fg(Color::Blue))
         .build();
 
-    f.render_widget(big_text, rect);
+    f.render_widget(big_text, inner_rect);
 }
 
 pub fn render_world_time_widget(f: &mut Frame, rect: Rect, app: &AppState) {
