@@ -7,7 +7,7 @@ use ratatui::{
 pub fn render_disk_widgets(f: &mut Frame, rect: Rect, app: &AppState) {
     let disk_block = Block::default().title("Disks").borders(Borders::ALL);
 
-    let header_cells = ["Mount", "FS", "Total", "Free"]
+    let header_cells = ["Mount", "FS", "Total", "Free", "Free %"]
         .iter()
         .map(|h| Cell::from(*h).style(Style::default().fg(Color::Red)));
     let header = Row::new(header_cells).height(1).bottom_margin(1);
@@ -15,16 +15,18 @@ pub fn render_disk_widgets(f: &mut Frame, rect: Rect, app: &AppState) {
     let rows = app.disks.iter().map(|disk| {
         let total_space = disk.total_space() as f64 / 1_000_000_000.0;
         let available_space = disk.available_space() as f64 / 1_000_000_000.0;
+        let free_percent = (available_space / total_space) * 100.0;
         let cells = vec![
             Cell::from(disk.mount_point().to_string_lossy()),
             Cell::from(disk.file_system().to_string_lossy()),
             Cell::from(format!("{:.2} GB", total_space)),
             Cell::from(format!("{:.2} GB", available_space)),
+            Cell::from(format!("{:.2}%", free_percent)),
         ];
         Row::new(cells).height(1)
     });
 
-    let table = Table::new(rows, [Constraint::Percentage(40), Constraint::Percentage(15), Constraint::Percentage(20), Constraint::Percentage(25)])
+    let table = Table::new(rows, [Constraint::Percentage(30), Constraint::Percentage(15), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(15)])
         .header(header)
         .block(disk_block);
 
