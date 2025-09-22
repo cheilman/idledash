@@ -4,6 +4,16 @@ use ratatui::{
     widgets::{Block, Borders, Gauge, Sparkline},
 };
 
+fn format_bytes(bytes: u64) -> String {
+    if bytes < 1024 {
+        format!("{} B/s", bytes)
+    } else if bytes < 1024 * 1024 {
+        format!("{:.2} KB/s", bytes as f64 / 1024.0)
+    } else {
+        format!("{:.2} MB/s", bytes as f64 / (1024.0 * 1024.0))
+    }
+}
+
 pub fn render_system_widgets(f: &mut Frame, rect: Rect, app: &AppState) {
     let system_block = Block::default().title("System").borders(Borders::ALL);
     let system_layout = Layout::default()
@@ -38,14 +48,17 @@ pub fn render_system_widgets(f: &mut Frame, rect: Rect, app: &AppState) {
         .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
         .split(system_layout[2]);
 
+    let up_speed = app.network_up_history.last().unwrap_or(&0);
+    let down_speed = app.network_down_history.last().unwrap_or(&0);
+
     let network_up_sparkline = Sparkline::default()
-        .block(Block::default().title("Network Up"))
+        .block(Block::default().title(format!("Network Up ({})", format_bytes(*up_speed))))
         .data(&app.network_up_history)
         .style(Style::default().fg(Color::Yellow));
     f.render_widget(network_up_sparkline, network_layout[0]);
 
     let network_down_sparkline = Sparkline::default()
-        .block(Block::default().title("Network Down"))
+        .block(Block::default().title(format!("Network Down ({})", format_bytes(*down_speed))))
         .data(&app.network_down_history)
         .style(Style::default().fg(Color::Magenta));
     f.render_widget(network_down_sparkline, network_layout[1]);

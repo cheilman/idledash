@@ -13,6 +13,8 @@ pub struct AppState {
     pub network_up_history: Vec<u64>,
     pub network_down_history: Vec<u64>,
     pub networks: Networks,
+    pub previous_network_up: u64,
+    pub previous_network_down: u64,
 }
 
 impl AppState {
@@ -33,6 +35,8 @@ impl AppState {
             network_up_history: vec![0; 60],
             network_down_history: vec![0; 60],
             networks,
+            previous_network_up: 0,
+            previous_network_down: 0,
         }
     }
 
@@ -57,9 +61,24 @@ impl AppState {
             total_up += data.transmitted();
             total_down += data.received();
         }
+
+        let up_speed = if self.previous_network_up > 0 {
+            (total_up - self.previous_network_up) * 4
+        } else {
+            0
+        };
+        let down_speed = if self.previous_network_down > 0 {
+            (total_down - self.previous_network_down) * 4
+        } else {
+            0
+        };
+
         self.network_up_history.remove(0);
-        self.network_up_history.push(total_up);
+        self.network_up_history.push(up_speed);
         self.network_down_history.remove(0);
-        self.network_down_history.push(total_down);
+        self.network_down_history.push(down_speed);
+
+        self.previous_network_up = total_up;
+        self.previous_network_down = total_down;
     }
 }
