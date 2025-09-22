@@ -3,14 +3,19 @@ use chrono_tz::America::{Los_Angeles, New_York};
 use ratatui::{
     prelude::*,
     widgets::{Block, Borders, Paragraph},
+    text::Line,
 };
+use tui_big_text::{BigText, PixelSize};
 
 pub fn render_local_time_widget(f: &mut Frame, rect: Rect, app: &AppState) {
-    let local_time_str = app.local_time.format("%Y-%m-%d\n%H:%M:%S").to_string();
-    let local_time_widget = Paragraph::new(local_time_str)
-        .block(Block::default().title("Local Time").borders(Borders::ALL))
-        .alignment(Alignment::Center);
-    f.render_widget(local_time_widget, rect);
+    let local_time_str = app.local_time.format("%H:%M:%S").to_string();
+    let big_text = BigText::builder()
+        .pixel_size(PixelSize::Full)
+        .lines(vec![Line::from(local_time_str)])
+        .style(Style::default().fg(Color::Blue))
+        .build();
+
+    f.render_widget(big_text, rect);
 }
 
 pub fn render_world_time_widget(f: &mut Frame, rect: Rect, app: &AppState) {
