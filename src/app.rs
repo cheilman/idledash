@@ -63,12 +63,12 @@ impl AppState {
         }
 
         let up_speed = if self.previous_network_up > 0 {
-            (total_up - self.previous_network_up) * 4
+            (total_up.saturating_sub(self.previous_network_up)) * 4
         } else {
             0
         };
         let down_speed = if self.previous_network_down > 0 {
-            (total_down - self.previous_network_down) * 4
+            (total_down.saturating_sub(self.previous_network_down)) * 4
         } else {
             0
         };

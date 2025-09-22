@@ -1,4 +1,5 @@
 use std::io::{self, stdout};
+use std::panic;
 use std::time::Duration;
 
 use crossterm::{
@@ -27,6 +28,14 @@ fn main() -> io::Result<()> {
     execute!(stdout, EnterAlternateScreen)?;
     let backend = CrosstermBackend::new(stdout);
     let mut terminal = Terminal::new(backend)?;
+
+    // setup panic hook
+    let original_hook = panic::take_hook();
+    panic::set_hook(Box::new(move |panic_info| {
+        disable_raw_mode().unwrap();
+        execute!(io::stdout(), LeaveAlternateScreen).unwrap();
+        original_hook(panic_info);
+    }));
 
     // create app and run it
     let mut app_state = AppState::new();
