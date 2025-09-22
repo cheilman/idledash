@@ -1,6 +1,6 @@
 use crate::vcs::VcsInfo;
 use chrono::{DateTime, Local, Utc};
-use sysinfo::{Disks, System};
+use sysinfo::{Disks, System, Networks};
 
 pub struct AppState {
     pub local_time: DateTime<Local>,
@@ -10,6 +10,9 @@ pub struct AppState {
     pub memory_usage: f64,
     pub disks: Disks,
     pub vcs_status: Vec<VcsInfo>,
+    pub network_up_history: Vec<u64>,
+    pub network_down_history: Vec<u64>,
+    pub networks: Networks,
 }
 
 impl AppState {
@@ -17,6 +20,7 @@ impl AppState {
         let mut system = System::new_all();
         system.refresh_all();
         let disks = Disks::new_with_refreshed_list();
+        let networks = Networks::new_with_refreshed_list();
 
         AppState {
             local_time: Local::now(),
@@ -26,6 +30,9 @@ impl AppState {
             memory_usage: 0.0,
             disks,
             vcs_status: Vec::new(),
+            network_up_history: vec![0; 60],
+            network_down_history: vec![0; 60],
+            networks,
         }
     }
 
@@ -36,11 +43,23 @@ impl AppState {
         self.system.refresh_cpu_all();
         self.system.refresh_memory();
         self.disks.refresh(true);
+        self.networks.refresh(true);
 
         let cpu_usage = (self.system.global_cpu_usage() * 100.0) as u64;
         self.cpu_history.remove(0);
         self.cpu_history.push(cpu_usage);
 
         self.memory_usage = self.system.used_memory() as f64 / self.system.total_memory() as f64;
+
+        let mut total_up = 0;
+        let mut total_down = 0;
+        for (_, data) in self.networks.iter() {
+            total_up += data.transmitted();
+            total_down += data.received();
+        }
+        self.network_up_history.remove(0);
+        self.network_up_history.push(total_up);
+        self.network_down_history.remove(0);
+        self.network_down_history.push(total_down);
     }
 }
