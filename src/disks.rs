@@ -16,6 +16,14 @@ pub fn render_disk_widgets(f: &mut Frame, rect: Rect, app: &AppState) {
         let total_space = disk.total_space() as f64 / 1_000_000_000.0;
         let available_space = disk.available_space() as f64 / 1_000_000_000.0;
         let free_percent = (available_space / total_space) * 100.0;
+        let color = if free_percent > 50.0 {
+            Color::Green
+        } else if free_percent > 10.0 {
+            Color::Yellow
+        } else {
+            Color::Red
+        };
+
         let cells = vec![
             Cell::from(disk.mount_point().to_string_lossy()),
             Cell::from(disk.file_system().to_string_lossy()),
@@ -23,7 +31,7 @@ pub fn render_disk_widgets(f: &mut Frame, rect: Rect, app: &AppState) {
             Cell::from(format!("{:.2} GB", available_space)),
             Cell::from(format!("{:.2}%", free_percent)),
         ];
-        Row::new(cells).height(1)
+        Row::new(cells).height(1).style(Style::default().fg(color))
     });
 
     let table = Table::new(rows, [Constraint::Percentage(30), Constraint::Percentage(15), Constraint::Percentage(20), Constraint::Percentage(20), Constraint::Percentage(15)])
